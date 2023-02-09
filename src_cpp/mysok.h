@@ -42,7 +42,7 @@ int** move(vector<string> list_moves, int** tab_init);
 vector<string> IDD (int Max_Depth, int ** Table,  position * List_impossible_moves);
 vector<Position> get_impossible_positions (int ** board);
 bool check_corner(int** Table, Position pos);
-bool check_wall_line(Position forbid1, Position forbid2, int** tab_init);
+bool check_wall_line(Position pos1, Position pos2, int** Table);
 
 struct sok_board_t {
   int board[NBL][NBC];
@@ -58,7 +58,6 @@ struct sok_board_t {
   void move_option();
   bool verife_win();
 };
-
 
 inline sok_board_t::sok_board_t() {
   for (int i = 0; i < NBL; i++)
@@ -76,7 +75,6 @@ inline void sok_board_t::print_board() {
     printf("\n");
   }
 }
-
 
 // TO-DO pour Bruno: Il faudrait que la fonction verif win prenne
 // en argument la tableau initial et la liste de chemin pour pouvoir

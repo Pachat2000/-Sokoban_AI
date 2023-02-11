@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <string.h>
 #include <string>
+#include <vector>
 
 #define NBL 20
 #define NBC 20
@@ -27,8 +28,105 @@
 #define MAN2_ON_TARGET 9
 #define END_OF_LINE 10
 
+using namespace std;
+
+bool verif_win (int ** Table, vector<string> chemin);
+int ** move(vector<string> Liste_moves, int** Table);
+vector<string> move_options(int ** Table, position * List_imposible_moves);
 char board_str[] = {' ','_','.','#','$','*','1','u','2','d','a'};
 std::string move_str[] = {"Up", "Down", "Left", "Right", "Wait"};
+
+typedef struct position{
+  int x;
+  int y;
+}position;
+
+typedef struct noeud {
+  int profondeur;
+  string direction;
+  noeud* up;
+  noeud* down;
+  noeud* left;
+  noeud* right;
+} Noeud;
+
+Noeud* new_noeud(int prof,string direct, Noeud* u, Noeud* d, Noeud* l, Noeud* r){
+  Noeud * n = new Noeud;
+  n->profondeur = prof;
+  n->direction = direct;
+  n->up = u;
+  n->down = d;
+  n->left = l;
+  n->right = r;
+  return n;
+}
+
+void supr_noeud(Noeud * noeud){
+  delete noeud;
+  noeud = NULL;
+}
+
+void suppr_arbre(Noued* arbre){
+  vector<Noeud*> pile;
+  pile.push_back(arbre);
+  while(pile.length != 0){
+    Noeud* n = pile.pop();
+    if(n->up == NULL && n->down == NULL && n->left == NULL && n->rigth == NULL) suppr_noeud(n);
+    else{
+      if(n->rigth != NULL) pile.push_back(n->right);
+      if(n->left != NULL) pile.push_back(n->left);
+      if(n->down != NULL) pile.push_back(n->down);
+      if(n->up != NULL) pile.push_back(n->up);
+    }
+  }
+}
+
+vector<string> IDD (int Max_Depth, int ** Table,  position * List_imposible_moves){
+  int profondeur = 0;
+  Noeud* racine = new_noeud(profondeur, "", NULL, NULL, NULL, NULL);
+  vector<Noeud*> pile;
+  vector<string> chemin_parcouru;
+  pile.push_back(racine);
+  do{
+    if(pile.length == 0) profondeur++; pile.push_back(racine);
+    Noeud* n = pile.pop();
+    chemin_parcouru.push_back(n->direction);
+    if(n->profondeur == profondeur){
+      if(verif_win(tableau,chemin_parcouru)){
+	return chemin_parcouru;
+      }
+      else{
+	chemin_parcouru.pop();
+      }
+    }
+    else{
+      int ** tmp = move(chemin_parcouru, Table);
+      vector<string> new_move = move_option(tmp, List_imposible_moves);
+      for(auto i : new_move){
+	if(i == "up"){
+	  n->up = new_noeud(n->profondeur+1, "up", NULL, NULL, NULL, NULL);
+	}
+	if(i == "down"){
+	  n->down = new_noeud(n->profondeur+1, "down", NULL, NULL, NULL, NULL);
+	}
+	if(i == "left"){
+	  n->left = new_noeud(n->profondeur+1, "left", NULL, NULL, NULL, NULL);
+	}
+	if(i == "rigth"){
+	  n->rigth = new_noeud(n->profondeur+1, "rigth", NULL, NULL, NULL, NULL);
+	}
+      }
+      if(n->right != NULL) pile.push_back(n->right);
+      if(n->left != NULL) pile.push_back(n->left);
+      if(n->down != NULL) pile.push_back(n->down);
+      if(n->up != NULL) pile.push_back(n->up);
+    }
+  }while(profondeur != Max_Depth);
+  suppr_arbre(racine);
+  return chemin_parcouru;
+}
+
+
 
 struct sok_board_t {  
   int board[NBL][NBC];

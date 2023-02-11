@@ -43,20 +43,19 @@ vector<Position> get_impossible_positions(sok_board_t S) {
 // pour une case (pos) regarde si il y a 2 murs adjacent et qu'il n'y pas de
 // point final
 bool check_corner(sok_board_t S, Position pos) {
-  if (S.board[pos.x][pos.y - 1] == WALL && S.board[pos.x + 1][pos.y] == WALL) {
+  if (S.board[pos.x-1][pos.y] == WALL && S.board[pos.x][pos.y+1] == WALL) {
     return true;
-  } else if (S.board[pos.x + 1][pos.y] == WALL &&
-             S.board[pos.x + 1][pos.y + 1] == WALL) {
+  } else if (S.board[pos.x][pos.y+1] == WALL &&
+             S.board[pos.x+1][pos.y] == WALL) {
     return true;
-  } else if (S.board[pos.x][pos.y + 1] == WALL &&
-             S.board[pos.x - 1][pos.y] == WALL) {
+  } else if (S.board[pos.x+1][pos.y] == WALL &&
+             S.board[pos.x][pos.y-1] == WALL) {
     return true;
-  } else if (S.board[pos.x - 1][pos.y] == WALL &&
-             S.board[pos.x][pos.y - 1] == WALL) {
+  } else if (S.board[pos.x][pos.y-1] == WALL &&
+             S.board[pos.x-1][pos.y] == WALL) {
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 // regarde s'il y a un mur complet entre 2 positions interdites et qu'il n'y a
 // pas de point final

@@ -39,7 +39,7 @@ std::string move_str[] = {"Up", "Down", "Left", "Right", "Wait"};
 typedef struct position{
   int x;
   int y;
-}position;
+}Position;
 
 typedef struct noeud {
   int profondeur;
@@ -73,7 +73,7 @@ void suppr_arbre(Noued* arbre){
     Noeud* n = pile.pop();
     if(n->up == NULL && n->down == NULL && n->left == NULL && n->rigth == NULL) suppr_noeud(n);
     else{
-      if(n->rigth != NULL) pile.push_back(n->right);
+      if(n->right != NULL) pile.push_back(n->right);
       if(n->left != NULL) pile.push_back(n->left);
       if(n->down != NULL) pile.push_back(n->down);
       if(n->up != NULL) pile.push_back(n->up);
@@ -81,7 +81,7 @@ void suppr_arbre(Noued* arbre){
   }
 }
 
-vector<string> IDD (int Max_Depth, int ** Table,  position * List_imposible_moves){
+vector<string> IDD (int Max_Depth, sok_board_t Table, vector<Position> List_imposible_moves){
   int profondeur = 0;
   Noeud* racine = new_noeud(profondeur, "", NULL, NULL, NULL, NULL);
   vector<Noeud*> pile;
@@ -92,7 +92,8 @@ vector<string> IDD (int Max_Depth, int ** Table,  position * List_imposible_move
     Noeud* n = pile.pop();
     chemin_parcouru.push_back(n->direction);
     if(n->profondeur == profondeur){
-      if(verif_win(tableau,chemin_parcouru)){
+      if(Table.move(chemin_parcouru, Table.board)){    
+	suppr_arbre(racine);
 	return chemin_parcouru;
       }
       else{
@@ -100,26 +101,47 @@ vector<string> IDD (int Max_Depth, int ** Table,  position * List_imposible_move
       }
     }
     else{
-      int ** tmp = move(chemin_parcouru, Table);
-      vector<string> new_move = move_option(tmp, List_imposible_moves);
+      vector<string> new_move = Table.move_option(List_imposible_moves, chemin_parcouru);
       for(auto i : new_move){
-	if(i == "up"){
-	  n->up = new_noeud(n->profondeur+1, "up", NULL, NULL, NULL, NULL);
+	if(i == "right"){
+	  if(n->right != NULL) {
+	    pile.push_back(n->right);
+	  }
+	  else{
+	    n->right = new_noeud(n->profondeur+1, "right", NULL, NULL, NULL, NULL);
+	    pile.push_back(n->right);
+	  }
 	}
-	if(i == "down"){
-	  n->down = new_noeud(n->profondeur+1, "down", NULL, NULL, NULL, NULL);
-	}
+
 	if(i == "left"){
-	  n->left = new_noeud(n->profondeur+1, "left", NULL, NULL, NULL, NULL);
+	  if(n->left != NULL) {
+	    pile.push_back(n->left);
+	  }
+	  else{
+	    n->left = new_noeud(n->profondeur+1, "left", NULL, NULL, NULL, NULL);
+	    pile.push_back(n->left);
+	  }
 	}
-	if(i == "rigth"){
-	  n->rigth = new_noeud(n->profondeur+1, "rigth", NULL, NULL, NULL, NULL);
+
+	if(i == "down"){
+	  if(n->down != NULL){
+	    pile.push_back(n->down);
+	  }
+	  else{
+	    n->down = new_noeud(n->profondeur+1, "down", NULL, NULL, NULL, NULL);
+	    pile.push_back(n->down);
+	  }
+	}
+	if(i == "up"){
+	  if(n->up != NULL) {
+	    pile.push_back(n->up);
+	  }
+	  else{
+	    n->up = new_noeud(n->profondeur+1, "up", NULL, NULL, NULL, NULL);
+	    pile.push_back(n->up);
+	  }
 	}
       }
-      if(n->right != NULL) pile.push_back(n->right);
-      if(n->left != NULL) pile.push_back(n->left);
-      if(n->down != NULL) pile.push_back(n->down);
-      if(n->up != NULL) pile.push_back(n->up);
     }
   }while(profondeur != Max_Depth);
   suppr_arbre(racine);

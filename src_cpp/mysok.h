@@ -138,7 +138,7 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move,vector<str
     }
     bool test=true;
     for(auto i:impossi_move){
-      if(i.x==x && i.y==y){
+      if(i.y==x && i.x==y){
         test=false;
       }
     }

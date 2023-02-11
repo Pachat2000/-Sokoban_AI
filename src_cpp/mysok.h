@@ -1,5 +1,6 @@
 #ifndef MYSOK_H
 #define MYSOK_H
+#include <vector>
 #include <cstdio>
 #include <cstdlib>
 #include <string.h>
@@ -55,8 +56,8 @@ struct sok_board_t {
   sok_board_t();
   void print_board();
   void load(char *_file);
-  void move_option();
-  bool verife_win();
+  vector<string> move_option(vector<string>,vector<Position>);
+  bool verife_win(int **,vector<string>);
 };
 
 
@@ -91,15 +92,10 @@ inline bool sok_board_t::verife_win() {
   return true;
 }
 
-inline void sok_board_t::move_option() {
-  int posx = 0;
-  int posy = 0;
-  int option[4][2];
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 2; j++) {
-      option[i][j] = -1;
-    }
-  }
+vector<string> sok_board_t::move_option(vector<Position> impossi_move,vector<string> mo) {
+ vector<string> mouvement;
+ int posx=0;
+ int posy=0;
   for (int i = 0; i < board_nbl; i++) {
     for (int j = 0; j < NBC; j++) {
       if (board_str[board[i][j]] == '1') {
@@ -108,35 +104,57 @@ inline void sok_board_t::move_option() {
       }
     }
   }
-  int index = 0;
+  for(vector<string>::iterator it = mo.begin(); it != mo.end(); it++){
+		if (*it=="Up")posx-=1;
+    else if (*it=="Down")posx+=1;
+    else if (*it=="Left")posy-=1;
+    else if (*it=="Right")posy+=1;
+	}
   int x = 0;
   int y = 0;
+  string direction="";
   for (int i = 0; i < 4; i++) {
-    if (i < 2) {
-      x = posx - 1 + i * 2;
-      y = posy;
-    } else {
-      x = posx;
-      y = posy - 1 + (i - 2) * 2;
+    switch(i){
+      case 0:
+      direction="Up";
+      y=posy-1;
+      x=posx;
+      break;
+      case 1:
+      direction="Down";
+      y=posy+1;
+      x=posx;
+      break;
+      case 2:
+      direction="Left";
+      x=posx-1;
+      y=posy;
+      break;
+      case 3:
+      direction="Right";
+      x=posx+1;
+      y=posy;
+      break;
     }
+    bool test=true;
+    for(auto i:impossi_move){
+      if(i.x==x && i.y==y){
+        test=false;
+      }
+    }
+    if(test){
     if (board_str[board[y][x]] == '$') {
       if (board_str[board[(posy + (posy - y) * -2)]
                          [(posx + (posx - x) * -2)]] != '$' &&
           board_str[board[(posy + (posy - y) * -2)]
                          [(posx + (posx - x) * -2)]] != '#') {
-        option[index][0] = x;
-        option[index][1] = y;
+        mouvement.push_back(direction);
       }
     } else if (board_str[board[y][x]] != '#') {
-      option[index][0] = x;
-      option[index][1] = y;
-      index++;
+      mouvement.push_back(direction);
     }
-  }
-  for (int i = 0; i < 4; i++) {
-    if (option[i][0] != -1)
-      printf("next postion=%d;%d\n", option[i][0], option[i][1]);
-  }
+  }}
+  return mouvement;
 }
 
 inline void sok_board_t::load(char *_file) {

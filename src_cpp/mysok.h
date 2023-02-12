@@ -39,10 +39,10 @@ typedef struct position {
   int y;
 } Position;
 
-typedef struct reponse{
-bool win;
-vector<string> move;
-}
+typedef struct reponse {
+  bool win;
+  vector<string> move;
+} Reponse;
 
 typedef struct noeud {
   int profondeur;
@@ -64,10 +64,10 @@ struct sok_board_t {
   sok_board_t();
   void print_board();
   void load(char *_file);
-  vector<string> move_option(vector<Position> impossi_move, vector<string> mo);
+  vector<string> move_option(vector<Position> impossi_move);
   bool verife_win();
   void copy(int B[NBL][NBC]);
-  bool move(vector<string> list_moves);
+  Reponse move(vector<string> list_moves, vector<Position> impossi_move);
 };
 
 // PROTOTYPES
@@ -117,30 +117,37 @@ void suppr_arbre(Noeud *arbre) {
 
 vector<string> IDD(int Max_Depth, sok_board_t Table,
                    vector<Position> List_imposible_moves) {
+  Table.move_option(List_imposible_moves);
   int profondeur = 0;
   Noeud *racine = new_noeud(profondeur, "", NULL, NULL, NULL, NULL);
   vector<Noeud *> pile;
   vector<string> chemin_parcouru;
   pile.push_back(racine);
   do {
-    if(pile.size() == 0){
+    if (pile.size() == 0) {
       profondeur++;
-      //cout << racine->left->profondeur << endl;
+      cout << profondeur << endl;
+      // cout << racine->left->profondeur << endl;
       pile.push_back(racine);
     }
     Noeud *n = pile[pile.size() - 1];
     pile.pop_back();
     chemin_parcouru.push_back(n->direction);
     if (n->profondeur == profondeur) {
-      if (Table.move(chemin_parcouru)) {
+
+      Reponse t = Table.move(chemin_parcouru, List_imposible_moves);
+      if (t.win) {
+
         suppr_arbre(racine);
+
         return chemin_parcouru;
       } else {
+
         chemin_parcouru.pop_back();
       }
     } else {
-      vector<string> new_move =
-          Table.move_option(List_imposible_moves, chemin_parcouru);
+      Reponse t = Table.move(chemin_parcouru, List_imposible_moves);
+      vector<string> new_move = t.move;
       for (auto i : new_move) {
         if (i == "right") {
           if (n->right != NULL) {
@@ -182,6 +189,7 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
       }
     }
   } while (profondeur != Max_Depth);
+  cout << "okfin" << endl;
   suppr_arbre(racine);
   return chemin_parcouru;
 }
@@ -223,7 +231,7 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move) {
   int posy = 0;
   for (int i = 0; i < board_nbl; i++) {
     for (int j = 0; j < NBC; j++) {
-      if (board_str[board[i][j]] == '1') {
+      if (board_str[board[i][j]] == '1' || board_str[board[i][j]] == 'u') {
         posx = j;
         posy = i;
       }
@@ -255,27 +263,31 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move) {
       y = posy;
       break;
     }
-      if (board_str[board[y][x]] == '$') {
-        if (board_str[board[(posy + (posy - y) * -2)]
-                           [(posx + (posx - x) * -2)]] != '$' &&
-            board_str[board[(posy + (posy - y) * -2)]
-                           [(posx + (posx - x) * -2)]] != '#') {
-    bool test = true;
-    for (auto i : impossi_move) {
-      if (i.y == (posx + (posx - x) * -2) && i.x == (posy + (posy - y) * -2)) {
-        test = false;
-      }
-    }
-    if(test){
-        mouvement.push_back(direction);
-    }}
+    if (board_str[board[y][x]] == '$' || board_str[board[y][x]] == '*') {
+      if (board_str[board[(posy + (posy - y) * -2)]
+                         [(posx + (posx - x) * -2)]] != '$' &&
+          board_str[board[(posy + (posy - y) * -2)]
+                         [(posx + (posx - x) * -2)]] != '*' &&
+          board_str[board[(posy + (posy - y) * -2)]
+                         [(posx + (posx - x) * -2)]] != '#') {
+        bool test = true;
+        for (auto i : impossi_move) {
+          if (i.y == (posx + (posx - x) * -2) &&
+              i.x == (posy + (posy - y) * -2)) {
+            test = false;
+          }
         }
-      } else if (board_str[board[y][x]] != '#') {
-        mouvement.push_back(direction);
+        if (test) {
+          mouvement.push_back(direction);
+        }
       }
+    } else if (board_str[board[y][x]] != '#') {
+      mouvement.push_back(direction);
     }
+  }
   return mouvement;
 }
+
 /*position sok_board_t::research_man_position(){
   for(int i = 0; i < board_nbl; i++) {
     for(int j = 0; j < NBC; j++) {
@@ -297,7 +309,8 @@ inline void sok_board_t::copy(int B[NBL][NBC]) {
   }
 }
 
-inline reponse sok_board_t::move(vector<string> list_moves,vector<Position> impossi_move) {
+inline reponse sok_board_t::move(vector<string> list_moves,
+                                 vector<Position> impossi_move) {
   int temp_pos_man1_x = man1_x;
   int temp_pos_man1_y = man1_y;
   int next_man_position;
@@ -432,10 +445,10 @@ inline reponse sok_board_t::move(vector<string> list_moves,vector<Position> impo
       }
     }
   }
-  //S.print_board();
+  // S.print_board();
   reponse t;
-  t.win=S.verife_win();
-  t.move=S.move_option(impossi_move);
+  t.win = S.verife_win();
+  t.move = S.move_option(impossi_move);
   return t;
 }
 

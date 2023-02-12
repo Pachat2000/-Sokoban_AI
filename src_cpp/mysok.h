@@ -212,8 +212,7 @@ inline bool sok_board_t::verife_win() {
   return true;
 }
 
-vector<string> sok_board_t::move_option(vector<Position> impossi_move,
-                                        vector<string> mo) {
+vector<string> sok_board_t::move_option(vector<Position> impossi_move) {
   vector<string> mouvement;
   int posx = 0;
   int posy = 0;
@@ -224,16 +223,6 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move,
         posy = i;
       }
     }
-  }
-  for (vector<string>::iterator it = mo.begin(); it != mo.end(); it++) {
-    if (*it == "up")
-      posx -= 1;
-    else if (*it == "down")
-      posx += 1;
-    else if (*it == "left")
-      posy -= 1;
-    else if (*it == "right")
-      posy += 1;
   }
   int x = 0;
   int y = 0;
@@ -261,25 +250,25 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move,
       y = posy;
       break;
     }
-    bool test = true;
-    for (auto i : impossi_move) {
-      if (i.y == x && i.x == y) {
-        test = false;
-      }
-    }
-    if (test) {
       if (board_str[board[y][x]] == '$') {
         if (board_str[board[(posy + (posy - y) * -2)]
                            [(posx + (posx - x) * -2)]] != '$' &&
             board_str[board[(posy + (posy - y) * -2)]
                            [(posx + (posx - x) * -2)]] != '#') {
-          mouvement.push_back(direction);
+    bool test = true;
+    for (auto i : impossi_move) {
+      if (i.y == (posx + (posx - x) * -2) && i.x == (posy + (posy - y) * -2)) {
+        test = false;
+      }
+    }
+    if(test){
+        mouvement.push_back(direction);
+    }}
         }
       } else if (board_str[board[y][x]] != '#') {
         mouvement.push_back(direction);
       }
     }
-  }
   return mouvement;
 }
 /*position sok_board_t::research_man_position(){

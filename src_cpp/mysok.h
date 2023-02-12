@@ -38,6 +38,15 @@ typedef struct position {
   int y;
 } Position;
 
+typedef struct noeud {
+  int profondeur;
+  string direction;
+  noeud *up;
+  noeud *down;
+  noeud *left;
+  noeud *right;
+} Noeud;
+
 struct sok_board_t {
   int board[NBL][NBC];
   int board_nbl;
@@ -49,7 +58,7 @@ struct sok_board_t {
   sok_board_t();
   void print_board();
   void load(char *_file);
-  void move_option();
+  vector<string> move_option(vector<Position> impossi_move, vector<string> mo);
   bool verife_win();
   void copy(int B[NBL][NBC]);
   bool move(vector<string> list_moves);
@@ -61,6 +70,113 @@ vector<string> IDD(int Max_Depth, int **Table, position *List_impossible_moves);
 vector<Position> get_impossible_positions(int **board);
 bool check_corner(sok_board_t S, Position pos);
 vector<Position> check_wall_line(Position pos1, Position pos2, sok_board_t S);
+
+Noeud *new_noeud(int prof, string direct, Noeud *u, Noeud *d, Noeud *l,
+                 Noeud *r) {
+  Noeud *n = new Noeud;
+  n->profondeur = prof;
+  n->direction = direct;
+  n->up = u;
+  n->down = d;
+  n->left = l;
+  n->right = r;
+  return n;
+}
+
+void supr_noeud(Noeud *noeud) {
+  delete noeud;
+  noeud = NULL;
+}
+
+void suppr_arbre(Noeud *arbre) {
+  vector<Noeud *> pile;
+  pile.push_back(arbre);
+  while (pile.size() != 0) {
+    Noeud *n = pile[pile.size() - 1];
+    pile.pop_back();
+    if (n->up == NULL && n->down == NULL && n->left == NULL && n->right == NULL)
+      supr_noeud(n);
+    else {
+      if (n->right != NULL)
+        pile.push_back(n->right);
+      if (n->left != NULL)
+        pile.push_back(n->left);
+      if (n->down != NULL)
+        pile.push_back(n->down);
+      if (n->up != NULL)
+        pile.push_back(n->up);
+    }
+  }
+}
+
+vector<string> IDD(int Max_Depth, sok_board_t Table,
+                   vector<Position> List_imposible_moves) {
+  int profondeur = 0;
+  Noeud *racine = new_noeud(profondeur, "", NULL, NULL, NULL, NULL);
+  vector<Noeud *> pile;
+  vector<string> chemin_parcouru;
+  pile.push_back(racine);
+  do {
+    if (pile.size() == 0)
+      profondeur++;
+    pile.push_back(racine);
+    Noeud *n = pile[pile.size() - 1];
+    pile.pop_back();
+    chemin_parcouru.push_back(n->direction);
+    if (n->profondeur == profondeur) {
+      if (Table.move(chemin_parcouru)) {
+        suppr_arbre(racine);
+        return chemin_parcouru;
+      } else {
+        chemin_parcouru.pop_back();
+      }
+    } else {
+      vector<string> new_move =
+          Table.move_option(List_imposible_moves, chemin_parcouru);
+      for (auto i : new_move) {
+        if (i == "right") {
+          if (n->right != NULL) {
+            pile.push_back(n->right);
+          } else {
+            n->right =
+                new_noeud(n->profondeur + 1, "right", NULL, NULL, NULL, NULL);
+            pile.push_back(n->right);
+          }
+        }
+
+        if (i == "left") {
+          if (n->left != NULL) {
+            pile.push_back(n->left);
+          } else {
+            n->left =
+                new_noeud(n->profondeur + 1, "left", NULL, NULL, NULL, NULL);
+            pile.push_back(n->left);
+          }
+        }
+
+        if (i == "down") {
+          if (n->down != NULL) {
+            pile.push_back(n->down);
+          } else {
+            n->down =
+                new_noeud(n->profondeur + 1, "down", NULL, NULL, NULL, NULL);
+            pile.push_back(n->down);
+          }
+        }
+        if (i == "up") {
+          if (n->up != NULL) {
+            pile.push_back(n->up);
+          } else {
+            n->up = new_noeud(n->profondeur + 1, "up", NULL, NULL, NULL, NULL);
+            pile.push_back(n->up);
+          }
+        }
+      }
+    }
+  } while (profondeur != Max_Depth);
+  suppr_arbre(racine);
+  return chemin_parcouru;
+}
 
 inline sok_board_t::sok_board_t() {
   for (int i = 0; i < NBL; i++)
@@ -93,15 +209,11 @@ inline bool sok_board_t::verife_win() {
   return true;
 }
 
-inline void sok_board_t::move_option() {
+vector<string> sok_board_t::move_option(vector<Position> impossi_move,
+                                        vector<string> mo) {
+  vector<string> mouvement;
   int posx = 0;
   int posy = 0;
-  int option[4][2];
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 2; j++) {
-      option[i][j] = -1;
-    }
-  }
   for (int i = 0; i < board_nbl; i++) {
     for (int j = 0; j < NBC; j++) {
       if (board_str[board[i][j]] == '1') {
@@ -110,35 +222,62 @@ inline void sok_board_t::move_option() {
       }
     }
   }
-  int index = 0;
+  for (vector<string>::iterator it = mo.begin(); it != mo.end(); it++) {
+    if (*it == "Up")
+      posx -= 1;
+    else if (*it == "Down")
+      posx += 1;
+    else if (*it == "Left")
+      posy -= 1;
+    else if (*it == "Right")
+      posy += 1;
+  }
   int x = 0;
   int y = 0;
+  string direction = "";
   for (int i = 0; i < 4; i++) {
-    if (i < 2) {
-      x = posx - 1 + i * 2;
-      y = posy;
-    } else {
+    switch (i) {
+    case 0:
+      direction = "Up";
+      y = posy - 1;
       x = posx;
-      y = posy - 1 + (i - 2) * 2;
+      break;
+    case 1:
+      direction = "Down";
+      y = posy + 1;
+      x = posx;
+      break;
+    case 2:
+      direction = "Left";
+      x = posx - 1;
+      y = posy;
+      break;
+    case 3:
+      direction = "Right";
+      x = posx + 1;
+      y = posy;
+      break;
     }
-    if (board_str[board[y][x]] == '$') {
-      if (board_str[board[(posy + (posy - y) * -2)]
-                         [(posx + (posx - x) * -2)]] != '$' &&
-          board_str[board[(posy + (posy - y) * -2)]
-                         [(posx + (posx - x) * -2)]] != '#') {
-        option[index][0] = x;
-        option[index][1] = y;
+    bool test = true;
+    for (auto i : impossi_move) {
+      if (i.y == x && i.x == y) {
+        test = false;
       }
-    } else if (board_str[board[y][x]] != '#') {
-      option[index][0] = x;
-      option[index][1] = y;
-      index++;
+    }
+    if (test) {
+      if (board_str[board[y][x]] == '$') {
+        if (board_str[board[(posy + (posy - y) * -2)]
+                           [(posx + (posx - x) * -2)]] != '$' &&
+            board_str[board[(posy + (posy - y) * -2)]
+                           [(posx + (posx - x) * -2)]] != '#') {
+          mouvement.push_back(direction);
+        }
+      } else if (board_str[board[y][x]] != '#') {
+        mouvement.push_back(direction);
+      }
     }
   }
-  for (int i = 0; i < 4; i++) {
-    if (option[i][0] != -1)
-      printf("next postion=%d;%d\n", option[i][0], option[i][1]);
-  }
+  return mouvement;
 }
 /*position sok_board_t::research_man_position(){
   for(int i = 0; i < board_nbl; i++) {

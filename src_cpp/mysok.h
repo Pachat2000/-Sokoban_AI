@@ -1,5 +1,6 @@
 #ifndef MYSOK_H
 #define MYSOK_H
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -117,7 +118,10 @@ void suppr_arbre(Noeud *arbre) {
 
 vector<string> IDD(int Max_Depth, sok_board_t Table,
                    vector<Position> List_imposible_moves) {
+
   Table.move_option(List_imposible_moves);
+  int diff_profondeur = 0;
+  int svg = 0;
   int profondeur = 0;
   Noeud *racine = new_noeud(profondeur, "", NULL, NULL, NULL, NULL);
   vector<Noeud *> pile;
@@ -127,69 +131,77 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
     if (pile.size() == 0) {
       profondeur++;
       cout << profondeur << endl;
-      // cout << racine->left->profondeur << endl;
+      diff_profondeur = 0;
+      svg = 0;
+      chemin_parcouru.clear();
       pile.push_back(racine);
     }
+
+    diff_profondeur = svg;
     Noeud *n = pile[pile.size() - 1];
+    svg = n->profondeur;
     pile.pop_back();
+    if (n->profondeur < diff_profondeur) {
+      for (int i = 0; i < (diff_profondeur - n->profondeur); i++) {
+        chemin_parcouru.pop_back();
+      }
+    }
     chemin_parcouru.push_back(n->direction);
     if (n->profondeur == profondeur) {
 
       Reponse t = Table.move(chemin_parcouru, List_imposible_moves);
       if (t.win) {
-
+        cout << profondeur << endl;
         suppr_arbre(racine);
 
         return chemin_parcouru;
       } else {
-
         chemin_parcouru.pop_back();
       }
     } else {
       Reponse t = Table.move(chemin_parcouru, List_imposible_moves);
       vector<string> new_move = t.move;
       for (auto i : new_move) {
-        if (i == "right") {
-          if (n->right != NULL) {
-            pile.push_back(n->right);
-          } else {
-            n->right =
-                new_noeud(n->profondeur + 1, "right", NULL, NULL, NULL, NULL);
-            pile.push_back(n->right);
-          }
+        // cout << "COUCOUC " + i;
+      }
+      // cout << endl;
+      if (find(new_move.begin(), new_move.end(), "right") != new_move.end()) {
+        if (n->right != NULL) {
+          pile.push_back(n->right);
+        } else {
+          n->right =
+              new_noeud(n->profondeur + 1, "right", NULL, NULL, NULL, NULL);
+          pile.push_back(n->right);
         }
-
-        if (i == "left") {
-          if (n->left != NULL) {
-            pile.push_back(n->left);
-          } else {
-            n->left =
-                new_noeud(n->profondeur + 1, "left", NULL, NULL, NULL, NULL);
-            pile.push_back(n->left);
-          }
+      }
+      if (find(new_move.begin(), new_move.end(), "left") != new_move.end()) {
+        if (n->left != NULL) {
+          pile.push_back(n->left);
+        } else {
+          n->left =
+              new_noeud(n->profondeur + 1, "left", NULL, NULL, NULL, NULL);
+          pile.push_back(n->left);
         }
-
-        if (i == "down") {
-          if (n->down != NULL) {
-            pile.push_back(n->down);
-          } else {
-            n->down =
-                new_noeud(n->profondeur + 1, "down", NULL, NULL, NULL, NULL);
-            pile.push_back(n->down);
-          }
+      }
+      if (find(new_move.begin(), new_move.end(), "down") != new_move.end()) {
+        if (n->down != NULL) {
+          pile.push_back(n->down);
+        } else {
+          n->down =
+              new_noeud(n->profondeur + 1, "down", NULL, NULL, NULL, NULL);
+          pile.push_back(n->down);
         }
-        if (i == "up") {
-          if (n->up != NULL) {
-            pile.push_back(n->up);
-          } else {
-            n->up = new_noeud(n->profondeur + 1, "up", NULL, NULL, NULL, NULL);
-            pile.push_back(n->up);
-          }
+      }
+      if (find(new_move.begin(), new_move.end(), "up") != new_move.end()) {
+        if (n->up != NULL) {
+          pile.push_back(n->up);
+        } else {
+          n->up = new_noeud(n->profondeur + 1, "up", NULL, NULL, NULL, NULL);
+          pile.push_back(n->up);
         }
       }
     }
   } while (profondeur != Max_Depth);
-  cout << "okfin" << endl;
   suppr_arbre(racine);
   return chemin_parcouru;
 }

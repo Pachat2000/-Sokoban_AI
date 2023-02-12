@@ -124,7 +124,7 @@ int main(int _ac, char **_av) {
   S.load(_av[1]);
   S.print_board();
   vector<Position> vector_forbid_pos = get_impossible_positions(S);
-  vector<string> resultat = IDD(20, S, vector_forbid_pos);
+  vector<string> resultat = IDD(35, S, vector_forbid_pos);
   for (auto i : resultat) {
     cout << i << endl;
   }

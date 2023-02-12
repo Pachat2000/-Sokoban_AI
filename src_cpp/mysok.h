@@ -39,6 +39,11 @@ typedef struct position {
   int y;
 } Position;
 
+typedef struct reponse{
+bool win;
+vector<string> move;
+}
+
 typedef struct noeud {
   int profondeur;
   string direction;
@@ -292,7 +297,7 @@ inline void sok_board_t::copy(int B[NBL][NBC]) {
   }
 }
 
-inline bool sok_board_t::move(vector<string> list_moves) {
+inline reponse sok_board_t::move(vector<string> list_moves,vector<Position> impossi_move) {
   int temp_pos_man1_x = man1_x;
   int temp_pos_man1_y = man1_y;
   int next_man_position;
@@ -428,7 +433,10 @@ inline bool sok_board_t::move(vector<string> list_moves) {
     }
   }
   //S.print_board();
-  return S.verife_win();
+  reponse t;
+  t.win=S.verife_win();
+  t.move=S.move_option(impossi_move);
+  return t;
 }
 
 inline void sok_board_t::load(char *_file) {

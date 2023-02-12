@@ -1,5 +1,6 @@
 // #include <cstdio>
 #include "mysok.h"
+#include <cstdio>
 #include <cstdlib>
 #include <string.h>
 #include <string>
@@ -123,11 +124,7 @@ int main(int _ac, char **_av) {
   S.load(_av[1]);
   S.print_board();
   vector<Position> vector_forbid_pos = get_impossible_positions(S);
-  for (auto i : vector_forbid_pos) {
-    printf("[x: %d, y: %d]\n", i.x, i.y);
-  }
-
-  if (S.verife_win())
-    printf("win\n");
+  vector<string> resultat = IDD(200, S, vector_forbid_pos);
+  cout << resultat.size() << endl;
   return 0;
 }

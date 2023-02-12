@@ -2,6 +2,7 @@
 #define MYSOK_H
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
 #include <string.h>
 #include <string>
 #include <vector>
@@ -117,9 +118,11 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
   vector<string> chemin_parcouru;
   pile.push_back(racine);
   do {
-    if (pile.size() == 0)
+    if(pile.size() == 0){
       profondeur++;
-    pile.push_back(racine);
+      //cout << racine->left->profondeur << endl;
+      pile.push_back(racine);
+    }
     Noeud *n = pile[pile.size() - 1];
     pile.pop_back();
     chemin_parcouru.push_back(n->direction);
@@ -223,13 +226,13 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move,
     }
   }
   for (vector<string>::iterator it = mo.begin(); it != mo.end(); it++) {
-    if (*it == "Up")
+    if (*it == "up")
       posx -= 1;
-    else if (*it == "Down")
+    else if (*it == "down")
       posx += 1;
-    else if (*it == "Left")
+    else if (*it == "left")
       posy -= 1;
-    else if (*it == "Right")
+    else if (*it == "right")
       posy += 1;
   }
   int x = 0;
@@ -238,22 +241,22 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move,
   for (int i = 0; i < 4; i++) {
     switch (i) {
     case 0:
-      direction = "Up";
+      direction = "up";
       y = posy - 1;
       x = posx;
       break;
     case 1:
-      direction = "Down";
+      direction = "down";
       y = posy + 1;
       x = posx;
       break;
     case 2:
-      direction = "Left";
+      direction = "left";
       x = posx - 1;
       y = posy;
       break;
     case 3:
-      direction = "Right";
+      direction = "right";
       x = posx + 1;
       y = posy;
       break;
@@ -309,10 +312,8 @@ inline bool sok_board_t::move(vector<string> list_moves) {
   sok_board_t S;
   S.board_nbl = board_nbl;
   S.copy(board);
-  S.print_board();
   for (unsigned int i = 0; i < list_moves.size(); i++) {
     string str = list_moves.at(i);
-    printf("%s\n", str.c_str());
     if (str == "left") {
       if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
         is_man_on_target = TARGET;
@@ -437,6 +438,7 @@ inline bool sok_board_t::move(vector<string> list_moves) {
       }
     }
   }
+  //S.print_board();
   return S.verife_win();
 }
 

@@ -38,13 +38,6 @@ typedef struct position {
   int y;
 } Position;
 
-// PROTOTYPES
-int **move(vector<string> list_moves, int **tab_init);
-vector<string> IDD(int Max_Depth, int **Table, position *List_impossible_moves);
-vector<Position> get_impossible_positions(int **board);
-bool check_corner(int **Table, Position pos);
-bool check_wall_line(Position forbid1, Position forbid2, int **tab_init);
-
 struct sok_board_t {
   int board[NBL][NBC];
   int board_nbl;
@@ -61,6 +54,13 @@ struct sok_board_t {
   void copy(int B[NBL][NBC]);
   bool move(vector<string> list_moves);
 };
+
+// PROTOTYPES
+int **move(vector<string> list_moves, int **tab_init);
+vector<string> IDD(int Max_Depth, int **Table, position *List_impossible_moves);
+vector<Position> get_impossible_positions(int **board);
+bool check_corner(sok_board_t S, Position pos);
+vector<Position> check_wall_line(Position pos1, Position pos2, sok_board_t S);
 
 inline sok_board_t::sok_board_t() {
   for (int i = 0; i < NBL; i++)

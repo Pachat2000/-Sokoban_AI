@@ -45,15 +45,6 @@ typedef struct reponse {
   vector<string> move;
 } Reponse;
 
-typedef struct noeud {
-  int profondeur;
-  string direction;
-  noeud *up;
-  noeud *down;
-  noeud *left;
-  noeud *right;
-} Noeud;
-
 struct sok_board_t {
   int board[NBL][NBC];
   int board_nbl;
@@ -69,7 +60,8 @@ struct sok_board_t {
   bool verife_win();
   void copy(int B[NBL][NBC]);
   Reponse move(vector<string> list_moves, vector<Position> impossi_move);
-  void sous_func_move(int temp_pos_man1_x, int temp_pos_man1_y,int add_x, int add_y, int is_man_on_target);
+  void sous_func_move(int temp_pos_man1_x, int temp_pos_man1_y, int add_x,
+                      int add_y, int is_man_on_target);
 };
 
 // PROTOTYPES
@@ -79,44 +71,6 @@ vector<Position> get_impossible_positions(int **board);
 bool check_corner(sok_board_t S, Position pos);
 vector<Position> check_wall_line(Position pos1, Position pos2, sok_board_t S);
 
-Noeud *new_noeud(int prof, string direct, Noeud *u, Noeud *d, Noeud *l,
-                 Noeud *r) {
-  Noeud *n = new Noeud;
-  n->profondeur = prof;
-  n->direction = direct;
-  n->up = u;
-  n->down = d;
-  n->left = l;
-  n->right = r;
-  return n;
-}
-
-void supr_noeud(Noeud *noeud) {
-  delete noeud;
-  noeud = NULL;
-}
-
-void suppr_arbre(Noeud *arbre) {
-  vector<Noeud *> pile;
-  pile.push_back(arbre);
-  while (pile.size() != 0) {
-    Noeud *n = pile[pile.size() - 1];
-    pile.pop_back();
-    if (n->up == NULL && n->down == NULL && n->left == NULL && n->right == NULL)
-      supr_noeud(n);
-    else {
-      if (n->right != NULL)
-        pile.push_back(n->right);
-      if (n->left != NULL)
-        pile.push_back(n->left);
-      if (n->down != NULL)
-        pile.push_back(n->down);
-      if (n->up != NULL)
-        pile.push_back(n->up);
-    }
-  }
-}
-
 vector<string> IDD(int Max_Depth, sok_board_t Table,
                    vector<Position> List_imposible_moves) {
 
@@ -124,10 +78,9 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
   int diff_profondeur = 0;
   int svg = 0;
   int profondeur = 0;
-  Noeud *racine = new_noeud(profondeur, "", NULL, NULL, NULL, NULL);
-  vector<Noeud *> pile;
+  vector<pair<string, int>> pile;
+  pile.push_back(make_pair("", 0));
   vector<string> chemin_parcouru;
-  pile.push_back(racine);
   do {
     if (pile.size() == 0) {
       profondeur++;
@@ -135,29 +88,26 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
       diff_profondeur = 0;
       svg = 0;
       chemin_parcouru.clear();
-      racine = new_noeud(0, "", NULL, NULL, NULL, NULL);
-      pile.push_back(racine);
+      pile.push_back(make_pair("", 0));
     }
 
     diff_profondeur = svg;
-    Noeud *n = pile[pile.size() - 1];
-    svg = n->profondeur;
+    pair<string, int> n = pile[pile.size() - 1];
+    svg = n.second;
     pile.pop_back();
-    if (n->profondeur < diff_profondeur) {
-      for (int i = 0; i < (diff_profondeur - n->profondeur); i++) {
+    if (n.second < diff_profondeur) {
+      for (int i = 0; i < (diff_profondeur - n.second); i++) {
         chemin_parcouru.pop_back();
       }
     }
-    chemin_parcouru.push_back(n->direction);
-    if (n->profondeur == profondeur) {
+    chemin_parcouru.push_back(n.first);
+    if (n.second == profondeur) {
 
       Reponse t = Table.move(chemin_parcouru, List_imposible_moves);
       if (t.win) {
         cout << profondeur << endl;
-        supr_noeud(n);
         return chemin_parcouru;
       } else {
-        supr_noeud(n);
         chemin_parcouru.pop_back();
       }
     } else {
@@ -168,41 +118,19 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
       }
       // cout << endl;
       if (find(new_move.begin(), new_move.end(), "r") != new_move.end()) {
-        if (n->right != NULL) {
-          pile.push_back(n->right);
-        } else {
-          n->right = new_noeud(n->profondeur + 1, "r", NULL, NULL, NULL, NULL);
-          pile.push_back(n->right);
-        }
+        pile.push_back(make_pair("r", n.second + 1));
       }
       if (find(new_move.begin(), new_move.end(), "l") != new_move.end()) {
-        if (n->left != NULL) {
-          pile.push_back(n->left);
-        } else {
-          n->left = new_noeud(n->profondeur + 1, "l", NULL, NULL, NULL, NULL);
-          pile.push_back(n->left);
-        }
+        pile.push_back(make_pair("l", n.second + 1));
       }
       if (find(new_move.begin(), new_move.end(), "d") != new_move.end()) {
-        if (n->down != NULL) {
-          pile.push_back(n->down);
-        } else {
-          n->down = new_noeud(n->profondeur + 1, "d", NULL, NULL, NULL, NULL);
-          pile.push_back(n->down);
-        }
+        pile.push_back(make_pair("d", n.second + 1));
       }
       if (find(new_move.begin(), new_move.end(), "u") != new_move.end()) {
-        if (n->up != NULL) {
-          pile.push_back(n->up);
-        } else {
-          n->up = new_noeud(n->profondeur + 1, "u", NULL, NULL, NULL, NULL);
-          pile.push_back(n->up);
-        }
+        pile.push_back(make_pair("u", n.second + 1));
       }
-      supr_noeud(n);
     }
   } while (profondeur != Max_Depth);
-  suppr_arbre(racine);
   return chemin_parcouru;
 }
 
@@ -321,68 +249,75 @@ inline void sok_board_t::copy(int B[NBL][NBC]) {
   }
 }
 
-
-
-inline void sok_board_t::sous_func_move(int temp_pos_man1_x, int temp_pos_man1_y,int add_x, int add_y, int is_man_on_target){
+inline void sok_board_t::sous_func_move(int temp_pos_man1_x,
+                                        int temp_pos_man1_y, int add_x,
+                                        int add_y, int is_man_on_target) {
   int next_man_position;
   int next_box_position; // box state after move
-      if ((board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == FREE) ||
-          (board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == CRATE_ON_FREE)) {
-        next_man_position = MAN1_ON_FREE;
-      } else {
-        next_man_position = MAN1_ON_TARGET;
-      }
-      /* Man moves alone*/
-      if ((board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == FREE) ||
-          (board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == TARGET)) {
-        board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] = next_man_position;
-        board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        temp_pos_man1_y -= 1;
+  if ((board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == FREE) ||
+      (board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] ==
+       CRATE_ON_FREE)) {
+    next_man_position = MAN1_ON_FREE;
+  } else {
+    next_man_position = MAN1_ON_TARGET;
+  }
+  /* Man moves alone*/
+  if ((board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == FREE) ||
+      (board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == TARGET)) {
+    board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] = next_man_position;
+    board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
+    temp_pos_man1_y -= 1;
 
-      } else {
-        /* next one is box*/
-        if (board[temp_pos_man1_x + add_x*2][temp_pos_man1_y + add_y*2] == TARGET) {
-          next_box_position = CRATE_ON_TARGET;
-        } else {
-          next_box_position = CRATE_ON_FREE;
-        }
-        board[temp_pos_man1_x+ add_x][temp_pos_man1_y + add_y] = next_man_position;
-        board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        board[temp_pos_man1_x + add_x*2][temp_pos_man1_y + add_y*2] = next_box_position;
-      }
+  } else {
+    /* next one is box*/
+    if (board[temp_pos_man1_x + add_x * 2][temp_pos_man1_y + add_y * 2] ==
+        TARGET) {
+      next_box_position = CRATE_ON_TARGET;
+    } else {
+      next_box_position = CRATE_ON_FREE;
+    }
+    board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] = next_man_position;
+    board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
+    board[temp_pos_man1_x + add_x * 2][temp_pos_man1_y + add_y * 2] =
+        next_box_position;
+  }
 }
 
 inline reponse sok_board_t::move(vector<string> list_moves,
                                  vector<Position> impossi_move) {
   int temp_pos_man1_x = man1_x;
   int temp_pos_man1_y = man1_y;
-  int is_man_on_target;  // What stays after the man leaves
+  int is_man_on_target; // What stays after the man leaves
   sok_board_t S;
   S.board_nbl = board_nbl;
   S.copy(board);
   for (unsigned int i = 0; i < list_moves.size(); i++) {
     string str = list_moves.at(i);
-      if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
-        is_man_on_target = TARGET;
-      } else {
-        is_man_on_target = FREE;
-      }
+    if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
+      is_man_on_target = TARGET;
+    } else {
+      is_man_on_target = FREE;
+    }
 
     if (str == "l") {
-      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, - 1, is_man_on_target);
+      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, -1,
+                       is_man_on_target);
       temp_pos_man1_y -= 1;
     } else if (str == "r") {
-      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, 1, is_man_on_target);
+      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, 1,
+                       is_man_on_target);
       temp_pos_man1_y += 1;
     } else if (str == "d") {
-      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 1, 0, is_man_on_target);
+      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 1, 0,
+                       is_man_on_target);
       temp_pos_man1_x += 1;
     } else if (str == "u") {
-      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, -1, 0, is_man_on_target);
-      temp_pos_man1_x -=  1; 
+      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, -1, 0,
+                       is_man_on_target);
+      temp_pos_man1_x -= 1;
     }
   }
-  //S.print_board();
+  // S.print_board();
   reponse t;
   t.win = S.verife_win();
   t.move = S.move_option(impossi_move);

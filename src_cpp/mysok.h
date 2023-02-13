@@ -165,38 +165,35 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
         // cout << "COUCOUC " + i;
       }
       // cout << endl;
-      if (find(new_move.begin(), new_move.end(), "right") != new_move.end()) {
+      if (find(new_move.begin(), new_move.end(), "r") != new_move.end()) {
         if (n->right != NULL) {
           pile.push_back(n->right);
         } else {
-          n->right =
-              new_noeud(n->profondeur + 1, "right", NULL, NULL, NULL, NULL);
+          n->right = new_noeud(n->profondeur + 1, "r", NULL, NULL, NULL, NULL);
           pile.push_back(n->right);
         }
       }
-      if (find(new_move.begin(), new_move.end(), "left") != new_move.end()) {
+      if (find(new_move.begin(), new_move.end(), "l") != new_move.end()) {
         if (n->left != NULL) {
           pile.push_back(n->left);
         } else {
-          n->left =
-              new_noeud(n->profondeur + 1, "left", NULL, NULL, NULL, NULL);
+          n->left = new_noeud(n->profondeur + 1, "l", NULL, NULL, NULL, NULL);
           pile.push_back(n->left);
         }
       }
-      if (find(new_move.begin(), new_move.end(), "down") != new_move.end()) {
+      if (find(new_move.begin(), new_move.end(), "d") != new_move.end()) {
         if (n->down != NULL) {
           pile.push_back(n->down);
         } else {
-          n->down =
-              new_noeud(n->profondeur + 1, "down", NULL, NULL, NULL, NULL);
+          n->down = new_noeud(n->profondeur + 1, "d", NULL, NULL, NULL, NULL);
           pile.push_back(n->down);
         }
       }
-      if (find(new_move.begin(), new_move.end(), "up") != new_move.end()) {
+      if (find(new_move.begin(), new_move.end(), "u") != new_move.end()) {
         if (n->up != NULL) {
           pile.push_back(n->up);
         } else {
-          n->up = new_noeud(n->profondeur + 1, "up", NULL, NULL, NULL, NULL);
+          n->up = new_noeud(n->profondeur + 1, "u", NULL, NULL, NULL, NULL);
           pile.push_back(n->up);
         }
       }
@@ -255,22 +252,22 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move) {
   for (int i = 0; i < 4; i++) {
     switch (i) {
     case 0:
-      direction = "up";
+      direction = "u";
       y = posy - 1;
       x = posx;
       break;
     case 1:
-      direction = "down";
+      direction = "d";
       y = posy + 1;
       x = posx;
       break;
     case 2:
-      direction = "left";
+      direction = "l";
       x = posx - 1;
       y = posy;
       break;
     case 3:
-      direction = "right";
+      direction = "r";
       x = posx + 1;
       y = posy;
       break;
@@ -333,7 +330,7 @@ inline reponse sok_board_t::move(vector<string> list_moves,
   S.copy(board);
   for (unsigned int i = 0; i < list_moves.size(); i++) {
     string str = list_moves.at(i);
-    if (str == "left") {
+    if (str == "l") {
       if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
         is_man_on_target = TARGET;
       } else {
@@ -364,7 +361,7 @@ inline reponse sok_board_t::move(vector<string> list_moves,
         S.board[temp_pos_man1_x][temp_pos_man1_y - 2] = next_box_position;
         temp_pos_man1_y -= 1;
       }
-    } else if (str == "right") {
+    } else if (str == "r") {
       if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
         is_man_on_target = TARGET;
       } else {
@@ -395,7 +392,7 @@ inline reponse sok_board_t::move(vector<string> list_moves,
         S.board[temp_pos_man1_x][temp_pos_man1_y + 2] = next_box_position;
         temp_pos_man1_y += 1;
       }
-    } else if (str == "down") {
+    } else if (str == "d") {
       if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
         is_man_on_target = TARGET;
       } else {
@@ -425,7 +422,7 @@ inline reponse sok_board_t::move(vector<string> list_moves,
         S.board[temp_pos_man1_x + 2][temp_pos_man1_y] = next_box_position;
         temp_pos_man1_x = temp_pos_man1_x + 1;
       }
-    } else if (str == "up") {
+    } else if (str == "u") {
       if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
         is_man_on_target = TARGET;
       } else {

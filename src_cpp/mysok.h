@@ -69,6 +69,7 @@ struct sok_board_t {
   bool verife_win();
   void copy(int B[NBL][NBC]);
   Reponse move(vector<string> list_moves, vector<Position> impossi_move);
+  void sous_func_move(int temp_pos_man1_x, int temp_pos_man1_y,int add_x, int add_y, int is_man_on_target);
 };
 
 // PROTOTYPES
@@ -320,149 +321,73 @@ inline void sok_board_t::copy(int B[NBL][NBC]) {
   }
 }
 
+
+
+inline void sok_board_t::sous_func_move(int temp_pos_man1_x, int temp_pos_man1_y,int add_x, int add_y, int is_man_on_target){
+  int next_man_position;
+  int next_box_position; // box state after move
+      if ((board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == FREE) ||
+          (board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == CRATE_ON_FREE)) {
+        next_man_position = MAN1_ON_FREE;
+      } else {
+        next_man_position = MAN1_ON_TARGET;
+      }
+      /* Man moves alone*/
+      if ((board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == FREE) ||
+          (board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] == TARGET)) {
+        board[temp_pos_man1_x + add_x][temp_pos_man1_y + add_y] = next_man_position;
+        board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
+        temp_pos_man1_y -= 1;
+
+      } else {
+        /* next one is box*/
+        if (board[temp_pos_man1_x + add_x*2][temp_pos_man1_y + add_y*2] == TARGET) {
+          next_box_position = CRATE_ON_TARGET;
+        } else {
+          next_box_position = CRATE_ON_FREE;
+        }
+        board[temp_pos_man1_x+ add_x][temp_pos_man1_y + add_y] = next_man_position;
+        board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
+        board[temp_pos_man1_x + add_x*2][temp_pos_man1_y + add_y*2] = next_box_position;
+      }
+}
+
 inline reponse sok_board_t::move(vector<string> list_moves,
                                  vector<Position> impossi_move) {
   int temp_pos_man1_x = man1_x;
   int temp_pos_man1_y = man1_y;
-  int next_man_position;
   int is_man_on_target;  // What stays after the man leaves
-  int next_box_position; // box state after move
   sok_board_t S;
   S.board_nbl = board_nbl;
   S.copy(board);
   for (unsigned int i = 0; i < list_moves.size(); i++) {
     string str = list_moves.at(i);
+      if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
+        is_man_on_target = TARGET;
+      } else {
+        is_man_on_target = FREE;
+      }
+
     if (str == "l") {
-      if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
-        is_man_on_target = TARGET;
-      } else {
-        is_man_on_target = FREE;
-      }
-      if ((S.board[temp_pos_man1_x][temp_pos_man1_y - 1] == FREE) ||
-          (S.board[temp_pos_man1_x][temp_pos_man1_y - 1] == CRATE_ON_FREE)) {
-        next_man_position = MAN1_ON_FREE;
-      } else {
-        next_man_position = MAN1_ON_TARGET;
-      }
-      /* Man moves alone*/
-      if ((S.board[temp_pos_man1_x][temp_pos_man1_y - 1] == FREE) ||
-          (S.board[temp_pos_man1_x][temp_pos_man1_y - 1] == TARGET)) {
-        S.board[temp_pos_man1_x][temp_pos_man1_y - 1] = next_man_position;
-        S.board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        temp_pos_man1_y -= 1;
-
-      } else {
-        /* next one is box*/
-        if (S.board[temp_pos_man1_x][temp_pos_man1_y - 2] == TARGET) {
-          next_box_position = CRATE_ON_TARGET;
-        } else {
-          next_box_position = CRATE_ON_FREE;
-        }
-        S.board[temp_pos_man1_x][temp_pos_man1_y - 1] = next_man_position;
-        S.board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        S.board[temp_pos_man1_x][temp_pos_man1_y - 2] = next_box_position;
-        temp_pos_man1_y -= 1;
-      }
+      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, - 1, is_man_on_target);
+      temp_pos_man1_y -= 1;
     } else if (str == "r") {
-      if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
-        is_man_on_target = TARGET;
-      } else {
-        is_man_on_target = FREE;
-      }
-      if ((S.board[temp_pos_man1_x][temp_pos_man1_y + 1] == FREE) ||
-          (S.board[temp_pos_man1_x][temp_pos_man1_y + 1] == CRATE_ON_FREE)) {
-        next_man_position = MAN1_ON_FREE;
-      } else {
-        next_man_position = MAN1_ON_TARGET;
-      }
-      /* Man moves alone*/
-      if ((S.board[temp_pos_man1_x][temp_pos_man1_y + 1] == FREE) ||
-          (S.board[temp_pos_man1_x][temp_pos_man1_y + 1] == TARGET)) {
-        S.board[temp_pos_man1_x][temp_pos_man1_y + 1] = next_man_position;
-        S.board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        temp_pos_man1_y += 1;
-
-      } else {
-        /* next one is box*/
-        if (S.board[temp_pos_man1_x][temp_pos_man1_y + 2] == TARGET) {
-          next_box_position = CRATE_ON_TARGET;
-        } else {
-          next_box_position = CRATE_ON_FREE;
-        }
-        S.board[temp_pos_man1_x][temp_pos_man1_y + 1] = next_man_position;
-        S.board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        S.board[temp_pos_man1_x][temp_pos_man1_y + 2] = next_box_position;
-        temp_pos_man1_y += 1;
-      }
+      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, 1, is_man_on_target);
+      temp_pos_man1_y += 1;
     } else if (str == "d") {
-      if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
-        is_man_on_target = TARGET;
-      } else {
-        is_man_on_target = FREE;
-      }
-
-      if ((S.board[temp_pos_man1_x + 1][temp_pos_man1_y] == FREE) ||
-          (S.board[temp_pos_man1_x + 1][temp_pos_man1_y] == CRATE_ON_FREE)) {
-        next_man_position = MAN1_ON_FREE;
-      } else {
-        next_man_position = MAN1_ON_TARGET;
-      }
-      /* Man moves alone*/
-      if ((S.board[temp_pos_man1_x + 1][temp_pos_man1_y] == FREE) ||
-          (S.board[temp_pos_man1_x + 1][temp_pos_man1_y] == TARGET)) {
-        S.board[temp_pos_man1_x + 1][temp_pos_man1_y] = next_man_position;
-        S.board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        temp_pos_man1_x = temp_pos_man1_x + 1;
-      } else { /* next one is box*/
-        if (S.board[temp_pos_man1_x + 2][temp_pos_man1_y] == TARGET) {
-          next_box_position = CRATE_ON_TARGET;
-        } else {
-          next_box_position = CRATE_ON_FREE;
-        }
-        S.board[temp_pos_man1_x + 1][temp_pos_man1_y] = next_man_position;
-        S.board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        S.board[temp_pos_man1_x + 2][temp_pos_man1_y] = next_box_position;
-        temp_pos_man1_x = temp_pos_man1_x + 1;
-      }
+      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 1, 0, is_man_on_target);
+      temp_pos_man1_x += 1;
     } else if (str == "u") {
-      if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
-        is_man_on_target = TARGET;
-      } else {
-        is_man_on_target = FREE;
-      }
-
-      if ((S.board[temp_pos_man1_x - 1][temp_pos_man1_y] == FREE) ||
-          (S.board[temp_pos_man1_x - 1][temp_pos_man1_y] == CRATE_ON_FREE)) {
-        next_man_position = MAN1_ON_FREE;
-      } else {
-        next_man_position = MAN1_ON_TARGET;
-      }
-      /* Man moves alone*/
-      if ((S.board[temp_pos_man1_x - 1][temp_pos_man1_y] == FREE) ||
-          (S.board[temp_pos_man1_x - 1][temp_pos_man1_y] == TARGET)) {
-        S.board[temp_pos_man1_x - 1][temp_pos_man1_y] = next_man_position;
-        S.board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        temp_pos_man1_x = temp_pos_man1_x - 1;
-      } else { /* next one is box*/
-        if (S.board[temp_pos_man1_x - 2][temp_pos_man1_y] == TARGET) {
-          next_box_position = CRATE_ON_TARGET;
-        } else {
-          next_box_position = CRATE_ON_FREE;
-        }
-        S.board[temp_pos_man1_x - 1][temp_pos_man1_y] = next_man_position;
-        S.board[temp_pos_man1_x][temp_pos_man1_y] = is_man_on_target;
-        S.board[temp_pos_man1_x - 2][temp_pos_man1_y] = next_box_position;
-        temp_pos_man1_x = temp_pos_man1_x - 1;
-      }
+      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, -1, 0, is_man_on_target);
+      temp_pos_man1_x -=  1; 
     }
   }
-  // S.print_board();
+  //S.print_board();
   reponse t;
   t.win = S.verife_win();
   t.move = S.move_option(impossi_move);
   return t;
 }
-
 inline void sok_board_t::load(char *_file) {
   FILE *fp = fopen(_file, "r");
   char *line = NULL;

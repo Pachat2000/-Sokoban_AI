@@ -57,22 +57,24 @@ struct sok_board_t {
   void print_board();
   void load(char *_file);
   vector<string> move_option(vector<Position> impossi_move);
-  bool verife_win();
+  bool verife_win(vector<Position> vec_finish);
+  vector<Position> get_vec_finish();
   void copy(int B[NBL][NBC]);
-  Reponse move(vector<string> list_moves, vector<Position> impossi_move);
+  Reponse move(vector<string> list_moves, vector<Position> impossi_move, vector<Position> vec_finish);
   void sous_func_move(int temp_pos_man1_x, int temp_pos_man1_y, int add_x,
                       int add_y, int is_man_on_target);
 };
 
 // PROTOTYPES
-int **move(vector<string> list_moves, int **tab_init);
-vector<string> IDD(int Max_Depth, int **Table, position *List_impossible_moves);
+vector<string> IDD(int Max_Depth, int **Table, position *List_impossible_moves,
+                   vector<Position> vec_finish);
 vector<Position> get_impossible_positions(int **board);
 bool check_corner(sok_board_t S, Position pos);
 vector<Position> check_wall_line(Position pos1, Position pos2, sok_board_t S);
 
 vector<string> IDD(int Max_Depth, sok_board_t Table,
-                   vector<Position> List_imposible_moves) {
+                   vector<Position> List_imposible_moves,
+                   vector<Position> vec_finish) {
 
   Table.move_option(List_imposible_moves);
   int diff_profondeur = 0;
@@ -103,7 +105,7 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
     chemin_parcouru.push_back(n.first);
     if (n.second == profondeur) {
 
-      Reponse t = Table.move(chemin_parcouru, List_imposible_moves);
+      Reponse t = Table.move(chemin_parcouru, List_imposible_moves, vec_finish);
       if (t.win) {
         cout << profondeur << endl;
         return chemin_parcouru;
@@ -111,7 +113,7 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
         chemin_parcouru.pop_back();
       }
     } else {
-      Reponse t = Table.move(chemin_parcouru, List_imposible_moves);
+      Reponse t = Table.move(chemin_parcouru, List_imposible_moves, vec_finish);
       vector<string> new_move = t.move;
       for (auto i : new_move) {
         // cout << "COUCOUC " + i;
@@ -151,15 +153,25 @@ inline void sok_board_t::print_board() {
   }
 }
 
-// TO-DO pour Bruno: Il faudrait que la fonction verif win prenne
-// en argument la tableau initial et la liste de chemin pour pouvoir
-// l'utiliser dans une fonction move que Manal va faire (plus pratique pour
-// pachat)
-inline bool sok_board_t::verife_win() {
+inline vector<Position> sok_board_t::get_vec_finish() {
+  vector<Position> vec_finish;
+  Position pos;
   for (int i = 0; i < board_nbl; i++) {
     for (int j = 0; j < NBC; j++) {
-      if (board_str[board[i][j]] == '.' || board_str[board[i][j]] == 'u')
-        return false;
+      if (board[i][j] == TARGET || board[i][j] == MAN1_ON_TARGET) {
+        pos.x = i;
+        pos.y = j;
+        vec_finish.push_back(pos);
+      }
+    }
+  }
+  return vec_finish;
+}
+
+inline bool sok_board_t::verife_win(vector<Position> vec_finish) {
+  for (auto i : vec_finish) {
+    if (board[i.x][i.y] == TARGET || board[i.x][i.y] == MAN1_ON_TARGET) {
+      return false;
     }
   }
   return true;
@@ -284,7 +296,7 @@ inline void sok_board_t::sous_func_move(int temp_pos_man1_x,
 }
 
 inline reponse sok_board_t::move(vector<string> list_moves,
-                                 vector<Position> impossi_move) {
+                                 vector<Position> impossi_move, vector<Position> vec_finish) {
   int temp_pos_man1_x = man1_x;
   int temp_pos_man1_y = man1_y;
   int is_man_on_target; // What stays after the man leaves
@@ -319,7 +331,7 @@ inline reponse sok_board_t::move(vector<string> list_moves,
   }
   // S.print_board();
   reponse t;
-  t.win = S.verife_win();
+  t.win = S.verife_win(vec_finish);
   t.move = S.move_option(impossi_move);
   return t;
 }

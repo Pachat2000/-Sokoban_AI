@@ -4,8 +4,10 @@
 #include <cstdlib>
 #include <string.h>
 #include <string>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 // creation liste des positions impossibles
 vector<Position> get_impossible_positions(sok_board_t S) {
@@ -120,13 +122,23 @@ int main(int _ac, char **_av) {
     return 0;
   }
 
+  auto start = high_resolution_clock::now();
+
   sok_board_t S;
   S.load(_av[1]);
   S.print_board();
+  vector<Position> vec_finish = S.get_vec_finish();
+  for (auto i: vec_finish) {
+    printf("[x: %d][y: %d]", i.x, i.y);
+  }
   vector<Position> vector_forbid_pos = get_impossible_positions(S);
-  vector<string> resultat = IDD(35, S, vector_forbid_pos);
+  vector<string> resultat = IDD(35, S, vector_forbid_pos, vec_finish);
   for (auto i : resultat) {
     cout << i << endl;
   }
+  auto stop = high_resolution_clock::now();
+  auto duration = duration_cast<seconds>(stop-start);
+  cout << duration.count() << endl;
+
   return 0;
 }

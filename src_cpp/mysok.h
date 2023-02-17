@@ -42,7 +42,7 @@ typedef struct position {
 
 typedef struct reponse {
   bool win;
-  vector<string> move;
+  vector<char> move;
 } Reponse;
 
 struct sok_board_t {
@@ -56,33 +56,34 @@ struct sok_board_t {
   sok_board_t();
   void print_board();
   void load(char *_file);
-  vector<string> move_option(vector<Position> impossi_move);
+  vector<char> move_option(vector<Position> impossi_move,char last_move);
   bool verife_win(vector<Position> vec_finish);
   vector<Position> get_vec_finish();
   void copy(int B[NBL][NBC]);
-  Reponse move(vector<string> list_moves, vector<Position> impossi_move, vector<Position> vec_finish);
+  Reponse move(vector<char> list_moves, vector<Position> impossi_move, vector<Position> vec_finish);
   void sous_func_move(int temp_pos_man1_x, int temp_pos_man1_y, int add_x,
                       int add_y, int is_man_on_target);
+int get_min_profondeur(vector<Position> vec_finish);
 };
 
 // PROTOTYPES
-vector<string> IDD(int Max_Depth, int **Table, position *List_impossible_moves,
+vector<char> IDD(int Max_Depth, int **Table, position *List_impossible_moves,
                    vector<Position> vec_finish);
 vector<Position> get_impossible_positions(int **board);
 bool check_corner(sok_board_t S, Position pos);
 vector<Position> check_wall_line(Position pos1, Position pos2, sok_board_t S);
 
-vector<string> IDD(int Max_Depth, sok_board_t Table,
+vector<char> IDD(int Max_Depth, sok_board_t Table,
                    vector<Position> List_imposible_moves,
                    vector<Position> vec_finish) {
 
-  Table.move_option(List_imposible_moves);
+  Table.move_option(List_imposible_moves,' ');
   int diff_profondeur = 0;
   int svg = 0;
-  int profondeur = 0;
-  vector<pair<string, int>> pile;
-  pile.push_back(make_pair("", 0));
-  vector<string> chemin_parcouru;
+  int profondeur = 50;// Table.get_min_profondeur(vec_finish);
+  vector<pair<char, int>> pile;
+  pile.push_back(make_pair(' ', 0));
+  vector<char> chemin_parcouru;
   do {
     if (pile.size() == 0) {
       profondeur++;
@@ -90,11 +91,11 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
       diff_profondeur = 0;
       svg = 0;
       chemin_parcouru.clear();
-      pile.push_back(make_pair("", 0));
+      pile.push_back(make_pair(' ', 0));
     }
 
     diff_profondeur = svg;
-    pair<string, int> n = pile[pile.size() - 1];
+    pair<char, int> n = pile[pile.size() - 1];
     svg = n.second;
     pile.pop_back();
     if (n.second < diff_profondeur) {
@@ -107,6 +108,7 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
 
       Reponse t = Table.move(chemin_parcouru, List_imposible_moves, vec_finish);
       if (t.win) {
+
         cout << profondeur << endl;
         return chemin_parcouru;
       } else {
@@ -114,26 +116,75 @@ vector<string> IDD(int Max_Depth, sok_board_t Table,
       }
     } else {
       Reponse t = Table.move(chemin_parcouru, List_imposible_moves, vec_finish);
-      vector<string> new_move = t.move;
-      for (auto i : new_move) {
-        // cout << "COUCOUC " + i;
+      vector<char> new_move = t.move;
+
+    /*for (auto i : chemin_parcouru) {
+        cout << "|" << i<< "|";
       }
-      // cout << endl;
-      if (find(new_move.begin(), new_move.end(), "r") != new_move.end()) {
-        pile.push_back(make_pair("r", n.second + 1));
+      cout<< endl;*/
+      if (find(new_move.begin(), new_move.end(), 'r') != new_move.end()) {
+        pile.push_back(make_pair('r', n.second + 1));
       }
-      if (find(new_move.begin(), new_move.end(), "l") != new_move.end()) {
-        pile.push_back(make_pair("l", n.second + 1));
+      if (find(new_move.begin(), new_move.end(), 'l') != new_move.end()) {
+        pile.push_back(make_pair('l', n.second + 1));
       }
-      if (find(new_move.begin(), new_move.end(), "d") != new_move.end()) {
-        pile.push_back(make_pair("d", n.second + 1));
+      if (find(new_move.begin(), new_move.end(), 'd') != new_move.end()) {
+        pile.push_back(make_pair('d', n.second + 1));
       }
-      if (find(new_move.begin(), new_move.end(), "u") != new_move.end()) {
-        pile.push_back(make_pair("u", n.second + 1));
+      if (find(new_move.begin(), new_move.end(), 'u') != new_move.end()) {
+        pile.push_back(make_pair('u', n.second + 1));
+      }
+      if(new_move.size()==0){
+        chemin_parcouru.pop_back();
       }
     }
   } while (profondeur != Max_Depth);
   return chemin_parcouru;
+}
+
+inline int sok_board_t::get_min_profondeur(vector<Position> vec_finish){
+  int pox = 0;
+  int poy = 0;
+  vector<Position> box;
+  for (int i = 0; i < board_nbl; i++) {
+    for (int j = 0; j < NBC; j++) {
+      if (board_str[board[i][j]] == '1' || board_str[board[i][j]] == 'u') {
+        pox = j;
+        poy = i;
+      }
+      if (board_str[board[i][j]] == '$'){
+        Position a;
+        a.x=j;
+        a.y=i;
+        box.push_back(a);
+      }
+    }
+  }
+  int res=0;
+  do{
+  int index=0;
+  int distance=100;
+  for(std::vector<Position>::size_type i=0;i<box.size();i++){
+    if(abs(pox-box.at(i).x)+abs(poy-box.at(i).y)<distance){
+      distance=abs(pox-box.at(i).x)+abs(poy-box.at(i).y);
+      index=i;
+    }
+  }
+  pox=box.at(index).x;
+  poy=box.at(index).y;
+  res+=distance;
+  distance=100;
+  for(std::vector<Position>::size_type i=0;i<vec_finish.size();i++){
+    if(abs(pox-vec_finish.at(i).x)+abs(poy-vec_finish.at(i).y)<distance){
+      distance=abs(pox-vec_finish.at(i).x)+abs(poy-vec_finish.at(i).y);
+    }
+  }
+  res+=distance;
+  box.erase(box.begin() + index);
+
+  }while(box.size()>0);
+  cout<<res<<endl;
+  return res;
 }
 
 inline sok_board_t::sok_board_t() {
@@ -177,8 +228,8 @@ inline bool sok_board_t::verife_win(vector<Position> vec_finish) {
   return true;
 }
 
-vector<string> sok_board_t::move_option(vector<Position> impossi_move) {
-  vector<string> mouvement;
+vector<char> sok_board_t::move_option(vector<Position> impossi_move,char last_move) {
+  vector<char> mouvement;
   int posx = 0;
   int posy = 0;
   for (int i = 0; i < board_nbl; i++) {
@@ -191,26 +242,31 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move) {
   }
   int x = 0;
   int y = 0;
-  string direction = "";
+  char last=' ';
+  char direction = ' ';
   for (int i = 0; i < 4; i++) {
     switch (i) {
     case 0:
-      direction = "u";
+    last='d';
+      direction = 'u';
       y = posy - 1;
       x = posx;
       break;
     case 1:
-      direction = "d";
+    last='u';
+      direction = 'd';
       y = posy + 1;
       x = posx;
       break;
     case 2:
-      direction = "l";
+    last='r';
+      direction = 'l';
       x = posx - 1;
       y = posy;
       break;
     case 3:
-      direction = "r";
+    last='l';
+      direction = 'r';
       x = posx + 1;
       y = posy;
       break;
@@ -234,9 +290,31 @@ vector<string> sok_board_t::move_option(vector<Position> impossi_move) {
         }
       }
     } else if (board_str[board[y][x]] != '#') {
-      mouvement.push_back(direction);
+      if (last_move!=last){
+      mouvement.push_back(direction);}
+      else{
+        switch (i) {
+    case 0:
+      y = posy + 1;
+      x = posx;
+      break;
+    case 1:
+      y = posy - 1;
+      x = posx;
+      break;
+    case 2:
+      x = posx + 1;
+      y = posy;
+      break;
+    case 3:
+      x = posx - 1;
+      y = posy;
+      break;
     }
-  }
+    if (board_str[board[y][x]] == '$' || board_str[board[y][x]] == '*') {
+      mouvement.push_back(direction);}
+    }
+  }}
   return mouvement;
 }
 
@@ -295,7 +373,7 @@ inline void sok_board_t::sous_func_move(int temp_pos_man1_x,
   }
 }
 
-inline reponse sok_board_t::move(vector<string> list_moves,
+inline reponse sok_board_t::move(vector<char> list_moves,
                                  vector<Position> impossi_move, vector<Position> vec_finish) {
   int temp_pos_man1_x = man1_x;
   int temp_pos_man1_y = man1_y;
@@ -304,35 +382,35 @@ inline reponse sok_board_t::move(vector<string> list_moves,
   S.board_nbl = board_nbl;
   S.copy(board);
   for (unsigned int i = 0; i < list_moves.size(); i++) {
-    string str = list_moves.at(i);
+    char str = list_moves.at(i);
     if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
       is_man_on_target = TARGET;
     } else {
       is_man_on_target = FREE;
     }
 
-    if (str == "l") {
+    if (str == 'l') {
       S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, -1,
                        is_man_on_target);
       temp_pos_man1_y -= 1;
-    } else if (str == "r") {
+    } else if (str == 'r') {
       S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, 1,
                        is_man_on_target);
       temp_pos_man1_y += 1;
-    } else if (str == "d") {
+    } else if (str == 'd') {
       S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 1, 0,
                        is_man_on_target);
       temp_pos_man1_x += 1;
-    } else if (str == "u") {
+    } else if (str == 'u') {
       S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, -1, 0,
                        is_man_on_target);
       temp_pos_man1_x -= 1;
     }
   }
-  // S.print_board();
+  //S.print_board();
   reponse t;
   t.win = S.verife_win(vec_finish);
-  t.move = S.move_option(impossi_move);
+  t.move = S.move_option(impossi_move,list_moves.at(list_moves.size()-1));
   return t;
 }
 inline void sok_board_t::load(char *_file) {

@@ -128,16 +128,13 @@ int main(int _ac, char **_av) {
   S.load(_av[1]);
   S.print_board();
   vector<Position> vec_finish = S.get_vec_finish();
-  for (auto i: vec_finish) {
-    printf("[x: %d][y: %d]", i.x, i.y);
-  }
   vector<Position> vector_forbid_pos = get_impossible_positions(S);
-  vector<string> resultat = IDD(35, S, vector_forbid_pos, vec_finish);
+  vector<char> resultat = IDD(35, S, vector_forbid_pos, vec_finish);
   for (auto i : resultat) {
     cout << i << endl;
   }
   auto stop = high_resolution_clock::now();
-  auto duration = duration_cast<seconds>(stop-start);
+  auto duration = duration_cast<milliseconds>(stop-start);
   cout << duration.count() << endl;
 
   return 0;

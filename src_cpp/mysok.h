@@ -63,7 +63,8 @@ struct sok_board_t {
   Reponse move(vector<char> list_moves, vector<Position> impossi_move, vector<Position> vec_finish);
   void sous_func_move(int temp_pos_man1_x, int temp_pos_man1_y, int add_x,
                       int add_y, int is_man_on_target);
-int get_min_profondeur(vector<Position> vec_finish);
+  int get_min_profondeur(vector<Position> vec_finish);
+  void move_back(char str);
 };
 
 // PROTOTYPES
@@ -80,7 +81,7 @@ vector<char> IDD(int Max_Depth, sok_board_t Table,
   Table.move_option(List_imposible_moves,' ');
   int diff_profondeur = 0;
   int svg = 0;
-  int profondeur = Table.get_min_profondeur(vec_finish);
+  int profondeur =0;  //Table.get_min_profondeur(vec_finish);
   vector<pair<char, int>> pile;
   pile.push_back(make_pair(' ', 0));
   vector<char> chemin_parcouru;
@@ -100,22 +101,24 @@ vector<char> IDD(int Max_Depth, sok_board_t Table,
     pile.pop_back();
     if (n.second < diff_profondeur) {
       for (int i = 0; i < (diff_profondeur - n.second); i++) {
+        Table.move_back(chemin_parcouru.back());
         chemin_parcouru.pop_back();
       }
     }
     chemin_parcouru.push_back(n.first);
     if (n.second == profondeur) {
 
-      Reponse t = Table.move(chemin_parcouru, List_imposible_moves, vec_finish);
+      Reponse t = Table.move({chemin_parcouru.back()}, List_imposible_moves, vec_finish);
       if (t.win) {
 
         cout << profondeur << endl;
         return chemin_parcouru;
       } else {
+        Table.move_back(chemin_parcouru.back());
         chemin_parcouru.pop_back();
       }
     } else {
-      Reponse t = Table.move(chemin_parcouru, List_imposible_moves, vec_finish);
+      Reponse t = Table.move({chemin_parcouru.back()}, List_imposible_moves, vec_finish);
       vector<char> new_move = t.move;
 
     /*for (auto i : chemin_parcouru) {
@@ -147,6 +150,7 @@ vector<char> IDD(int Max_Depth, sok_board_t Table,
         pile.push_back(make_pair('m', n.second + 1));
       }
       if(new_move.size()==0){
+        Table.move_back(chemin_parcouru.back());
         chemin_parcouru.pop_back();
       }
     }
@@ -252,7 +256,7 @@ vector<char> sok_board_t::move_option(vector<Position> impossi_move,char last_mo
   }
   int x = 0;
   int y = 0;
-  char last=' ';
+  char last=' '; 
   char direction = ' ';
   char div=' ';
   for (int i = 0; i < 4; i++) {
@@ -308,6 +312,7 @@ vector<char> sok_board_t::move_option(vector<Position> impossi_move,char last_mo
       if (last_move!=last){
       mouvement.push_back(direction);}
   }}
+  
   return mouvement;
 }
 
@@ -330,6 +335,142 @@ inline void sok_board_t::copy(int B[NBL][NBC]) {
       board[i][j] = B[i][j];
     }
   }
+}
+
+
+
+inline void sok_board_t::move_back(char str){
+  int is_man_on_target;  // What stays after the man leaves
+  int next_man_position;
+  int next_box_position; 
+
+  if (board[man1_x][man1_y] == MAN1_ON_TARGET) {
+    is_man_on_target = TARGET;
+  } else {
+    is_man_on_target = FREE;
+  }
+  if(is_man_on_target == TARGET){
+    next_box_position = CRATE_ON_TARGET;
+  } else {
+    next_box_position = CRATE_ON_FREE;
+  } 
+
+  if (str == 'l') {
+    if (board[man1_x ][man1_y + 1] == FREE) {
+      next_man_position = MAN1_ON_FREE;
+    } else {
+      next_man_position = MAN1_ON_TARGET;
+    }
+    board[man1_x][man1_y + 1] = next_man_position ;
+    board[man1_x][man1_y] = is_man_on_target;
+    man1_y += 1;
+    /*S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, - 1, is_man_on_target);
+      temp_pos_man1_y -= 1;*/
+  } else if (str == 'o') { 
+    if (board[man1_x ][man1_y + 1] == FREE) {
+      next_man_position = MAN1_ON_FREE;
+    } else {
+      next_man_position = MAN1_ON_TARGET;
+    }
+    if ((board[man1_x][man1_y-1] == CRATE_ON_FREE)) {
+      board[man1_x][man1_y + 1] = next_man_position ;
+      board[man1_x][man1_y] = next_box_position;
+      board[man1_x][man1_y-1] = FREE;
+    }else if (board[man1_x][man1_y-1] == CRATE_ON_TARGET){
+      board[man1_x][man1_y + 1] = next_man_position ;
+      board[man1_x][man1_y] = next_box_position;
+      board[man1_x][man1_y-1] = TARGET;
+    }
+    man1_y += 1;
+
+  } else if (str == 'r') {
+
+    if (board[man1_x ][man1_y - 1] == FREE) {
+      next_man_position = MAN1_ON_FREE;
+    } else {
+      next_man_position = MAN1_ON_TARGET;
+    }
+    board[man1_x][man1_y - 1] = next_man_position ;
+    board[man1_x][man1_y] = is_man_on_target;
+    man1_y -= 1;
+    /*S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, 1, is_man_on_target);
+    temp_pos_man1_y += 1;*/
+  } else if (str == 'p') {
+    if (board[man1_x ][man1_y - 1] == FREE) {
+      next_man_position = MAN1_ON_FREE;
+    } else {
+      next_man_position = MAN1_ON_TARGET;
+    }
+    if ((board[man1_x][man1_y+1] == CRATE_ON_FREE)) {
+      board[man1_x][man1_y - 1] = next_man_position ;
+      board[man1_x][man1_y] = next_box_position;
+      board[man1_x][man1_y+1] = FREE;
+    }else if (board[man1_x][man1_y+1] == CRATE_ON_TARGET){
+      board[man1_x][man1_y - 1] = next_man_position ;
+      board[man1_x][man1_y] = next_box_position;
+      board[man1_x][man1_y+1] = TARGET;
+    }
+    man1_y -= 1;
+  } else if (str == 'd') {
+
+    if (board[man1_x -1 ][man1_y ] == FREE) {
+      next_man_position = MAN1_ON_FREE;
+    } else {
+      next_man_position = MAN1_ON_TARGET;
+    }
+    board[man1_x-1][man1_y] = next_man_position ;
+    board[man1_x][man1_y] = is_man_on_target;
+    man1_x -= 1;
+    /*S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 1, 0, is_man_on_target);
+    temp_pos_man1_x += 1;*/
+  } else if (str == 'n') {
+    if (board[man1_x -1 ][man1_y ] == FREE) {
+      next_man_position = MAN1_ON_FREE;
+    } else {
+      next_man_position = MAN1_ON_TARGET;
+    }
+    if ((board[man1_x+1][man1_y] == CRATE_ON_FREE)) {
+      board[man1_x-1][man1_y ] = next_man_position ;
+      board[man1_x][man1_y] = next_box_position;
+      board[man1_x+1][man1_y] = FREE;
+    }else if (board[man1_x+1][man1_y] == CRATE_ON_TARGET){
+      board[man1_x-1][man1_y ] = next_man_position ;
+      board[man1_x][man1_y] = next_box_position;
+      board[man1_x+1][man1_y] = TARGET;
+    }
+    man1_x -= 1;
+  
+  } else if (str == 'u') {
+
+    if (board[man1_x +1 ][man1_y ] == FREE) {
+      next_man_position = MAN1_ON_FREE;
+    } else {
+      next_man_position = MAN1_ON_TARGET;
+    }
+    board[man1_x+1][man1_y] = next_man_position ;
+    board[man1_x][man1_y] = is_man_on_target;
+    man1_x += 1;
+
+    /*S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, -1, 0, is_man_on_target);
+    temp_pos_man1_x -=  1; */
+  }else if (str == 'm') {
+    if (board[man1_x +1 ][man1_y ] == FREE) {
+      next_man_position = MAN1_ON_FREE;
+    } else {
+      next_man_position = MAN1_ON_TARGET;
+    }
+    if ((board[man1_x-1][man1_y] == CRATE_ON_FREE)) {
+      board[man1_x+1][man1_y ] = next_man_position ;
+      board[man1_x][man1_y] = next_box_position;
+      board[man1_x-1][man1_y] = FREE;
+    }else if (board[man1_x-1][man1_y] == CRATE_ON_TARGET){
+      board[man1_x+1][man1_y ] = next_man_position ;
+      board[man1_x][man1_y] = next_box_position;
+      board[man1_x-1][man1_y] = TARGET;
+    }
+    man1_x += 1;
+  }
+
 }
 
 inline void sok_board_t::sous_func_move(int temp_pos_man1_x,
@@ -371,39 +512,39 @@ inline reponse sok_board_t::move(vector<char> list_moves,
   int temp_pos_man1_x = man1_x;
   int temp_pos_man1_y = man1_y;
   int is_man_on_target; // What stays after the man leaves
-  sok_board_t S;
-  S.board_nbl = board_nbl;
-  S.copy(board);
+
   for (unsigned int i = 0; i < list_moves.size(); i++) {
     char str = list_moves.at(i);
-    if (S.board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
+    if (this->board[temp_pos_man1_x][temp_pos_man1_y] == MAN1_ON_TARGET) {
       is_man_on_target = TARGET;
     } else {
       is_man_on_target = FREE;
     }
 
     if (str == 'l' || str == 'o') {
-      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, -1,
+      this->sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, -1,
                        is_man_on_target);
       temp_pos_man1_y -= 1;
     } else if (str == 'r' || str == 'p') {
-      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, 1,
+      this->sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, 1,
                        is_man_on_target);
       temp_pos_man1_y += 1;
     } else if (str == 'd' || str == 'n') {
-      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 1, 0,
+      this->sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 1, 0,
                        is_man_on_target);
       temp_pos_man1_x += 1;
     } else if (str == 'u' || str == 'm') {
-      S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, -1, 0,
+      this->sous_func_move(temp_pos_man1_x, temp_pos_man1_y, -1, 0,
                        is_man_on_target);
       temp_pos_man1_x -= 1;
     }
   }
-  //S.print_board();
+  //this->print_board();
+  man1_x = temp_pos_man1_x;
+  man1_y = temp_pos_man1_y; 
   reponse t;
-  t.win = S.verife_win(vec_finish);
-  t.move = S.move_option(impossi_move,list_moves.at(list_moves.size()-1));
+  t.win = this->verife_win(vec_finish);
+  t.move = this->move_option(impossi_move,list_moves.at(list_moves.size()-1));
   return t;
 }
 inline void sok_board_t::load(char *_file) {

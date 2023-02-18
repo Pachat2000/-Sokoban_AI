@@ -81,16 +81,23 @@ vector<char> IDD(int Max_Depth, sok_board_t Table,
   Table.move_option(List_imposible_moves,' ');
   int diff_profondeur = 0;
   int svg = 0;
-  int profondeur =0;  //Table.get_min_profondeur(vec_finish);
+  int profondeur = Table.get_min_profondeur(vec_finish);
   vector<pair<char, int>> pile;
   pile.push_back(make_pair(' ', 0));
   vector<char> chemin_parcouru;
   do {
     if (pile.size() == 0) {
+      
+        for (auto _ : chemin_parcouru) {
+           Table.move_back(chemin_parcouru.back());
+           chemin_parcouru.pop_back();
+        }
+
       profondeur++;
       cout << profondeur << endl;
       diff_profondeur = 0;
       svg = 0;
+      
       chemin_parcouru.clear();
       pile.push_back(make_pair(' ', 0));
     }
@@ -101,8 +108,10 @@ vector<char> IDD(int Max_Depth, sok_board_t Table,
     pile.pop_back();
     if (n.second < diff_profondeur) {
       for (int i = 0; i < (diff_profondeur - n.second); i++) {
+
         Table.move_back(chemin_parcouru.back());
-        chemin_parcouru.pop_back();
+         chemin_parcouru.pop_back();
+         
       }
     }
     chemin_parcouru.push_back(n.first);
@@ -112,6 +121,9 @@ vector<char> IDD(int Max_Depth, sok_board_t Table,
       if (t.win) {
 
         cout << profondeur << endl;
+        //Table.print_board();
+
+
         return chemin_parcouru;
       } else {
         Table.move_back(chemin_parcouru.back());

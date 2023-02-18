@@ -80,7 +80,7 @@ vector<char> IDD(int Max_Depth, sok_board_t Table,
   Table.move_option(List_imposible_moves,' ');
   int diff_profondeur = 0;
   int svg = 0;
-  int profondeur = 50;// Table.get_min_profondeur(vec_finish);
+  int profondeur = Table.get_min_profondeur(vec_finish);
   vector<pair<char, int>> pile;
   pile.push_back(make_pair(' ', 0));
   vector<char> chemin_parcouru;
@@ -134,6 +134,18 @@ vector<char> IDD(int Max_Depth, sok_board_t Table,
       if (find(new_move.begin(), new_move.end(), 'u') != new_move.end()) {
         pile.push_back(make_pair('u', n.second + 1));
       }
+      if (find(new_move.begin(), new_move.end(), 'p') != new_move.end()) {
+        pile.push_back(make_pair('p', n.second + 1));
+      }
+      if (find(new_move.begin(), new_move.end(), 'o') != new_move.end()) {
+        pile.push_back(make_pair('o', n.second + 1));
+      }
+      if (find(new_move.begin(), new_move.end(), 'n') != new_move.end()) {
+        pile.push_back(make_pair('n', n.second + 1));
+      }
+      if (find(new_move.begin(), new_move.end(), 'm') != new_move.end()) {
+        pile.push_back(make_pair('m', n.second + 1));
+      }
       if(new_move.size()==0){
         chemin_parcouru.pop_back();
       }
@@ -175,15 +187,13 @@ inline int sok_board_t::get_min_profondeur(vector<Position> vec_finish){
   res+=distance;
   distance=100;
   for(std::vector<Position>::size_type i=0;i<vec_finish.size();i++){
-    if(abs(pox-vec_finish.at(i).x)+abs(poy-vec_finish.at(i).y)<distance){
-      distance=abs(pox-vec_finish.at(i).x)+abs(poy-vec_finish.at(i).y);
+    if(abs(poy-vec_finish.at(i).x)+abs(pox-vec_finish.at(i).y)<distance){
+      distance=abs(poy-vec_finish.at(i).x)+abs(pox-vec_finish.at(i).y);
     }
   }
-  res+=distance;
+  res+=distance-1;
   box.erase(box.begin() + index);
-
   }while(box.size()>0);
-  cout<<res<<endl;
   return res;
 }
 
@@ -244,28 +254,33 @@ vector<char> sok_board_t::move_option(vector<Position> impossi_move,char last_mo
   int y = 0;
   char last=' ';
   char direction = ' ';
+  char div=' ';
   for (int i = 0; i < 4; i++) {
     switch (i) {
     case 0:
     last='d';
+    div='m';
       direction = 'u';
       y = posy - 1;
       x = posx;
       break;
     case 1:
     last='u';
+    div='n';
       direction = 'd';
       y = posy + 1;
       x = posx;
       break;
     case 2:
     last='r';
+    div='o';
       direction = 'l';
       x = posx - 1;
       y = posy;
       break;
     case 3:
     last='l';
+    div='p';
       direction = 'r';
       x = posx + 1;
       y = posy;
@@ -286,34 +301,12 @@ vector<char> sok_board_t::move_option(vector<Position> impossi_move,char last_mo
           }
         }
         if (test) {
-          mouvement.push_back(direction);
+          mouvement.push_back(div);
         }
       }
     } else if (board_str[board[y][x]] != '#') {
       if (last_move!=last){
       mouvement.push_back(direction);}
-      else{
-        switch (i) {
-    case 0:
-      y = posy + 1;
-      x = posx;
-      break;
-    case 1:
-      y = posy - 1;
-      x = posx;
-      break;
-    case 2:
-      x = posx + 1;
-      y = posy;
-      break;
-    case 3:
-      x = posx - 1;
-      y = posy;
-      break;
-    }
-    if (board_str[board[y][x]] == '$' || board_str[board[y][x]] == '*') {
-      mouvement.push_back(direction);}
-    }
   }}
   return mouvement;
 }
@@ -389,19 +382,19 @@ inline reponse sok_board_t::move(vector<char> list_moves,
       is_man_on_target = FREE;
     }
 
-    if (str == 'l') {
+    if (str == 'l' || str == 'o') {
       S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, -1,
                        is_man_on_target);
       temp_pos_man1_y -= 1;
-    } else if (str == 'r') {
+    } else if (str == 'r' || str == 'p') {
       S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 0, 1,
                        is_man_on_target);
       temp_pos_man1_y += 1;
-    } else if (str == 'd') {
+    } else if (str == 'd' || str == 'n') {
       S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, 1, 0,
                        is_man_on_target);
       temp_pos_man1_x += 1;
-    } else if (str == 'u') {
+    } else if (str == 'u' || str == 'm') {
       S.sous_func_move(temp_pos_man1_x, temp_pos_man1_y, -1, 0,
                        is_man_on_target);
       temp_pos_man1_x -= 1;

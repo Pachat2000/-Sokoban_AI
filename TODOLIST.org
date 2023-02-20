@@ -1,0 +1,16 @@
+* Fonctions de base pour le Sokoban
+**  Fonction de déplacement du personnage
+**  Fonction qui regarde si on a gagner la partie
+**  Fonction case libre d'un objet
+**  Fonction restart ?
+**  Fonction push de caise
+**  Fonction wait
+
+*  Faire le A* + parcour en largeur 
+
+*  Se repartir les taches pour le Sokoban
+
+** Qui fait le Sokoban 1 joueur en C++ ? 
+** Qui fait le Sokoban 2 joueur en C++ ? 
+** Qui fait le Sokoban 1 joueur en Prolog ? 
+** Qui fait le Sokoban 2 joueur en Prolog ? 

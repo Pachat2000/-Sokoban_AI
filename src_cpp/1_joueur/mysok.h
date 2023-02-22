@@ -256,16 +256,8 @@ inline bool sok_board_t::verife_win(vector<Position> vec_finish) {
 
 vector<char> sok_board_t::move_option(vector<Position> impossi_move,char last_move) {
   vector<char> mouvement;
-  int posx = 0;
-  int posy = 0;
-  for (int i = 0; i < board_nbl; i++) {
-    for (int j = 0; j < NBC; j++) {
-      if (board_str[board[i][j]] == '1' || board_str[board[i][j]] == 'u') {
-        posx = j;
-        posy = i;
-      }
-    }
-  }
+  int posx = man1_y;
+  int posy = man1_x;
   int x = 0;
   int y = 0;
   char last=' '; 

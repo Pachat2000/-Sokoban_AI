@@ -65,3 +65,10 @@ stuck(X,Y):-
     (\+ storage(X); \+ storage(Y)),
     (\+ right(X,_), \+ right(Y,_);
     \+ right(_,X), \+ right(_,Y)),!.
+    
+corner(Position):- \+(right(Position, _)), \+(top(Position, _)).
+corner(Position):- \+(right(_, Position)), \+(top(Position, _)).
+corner(Position):- \+(right(Position, _)), \+(top(_, Position)).
+corner(Position):- \+(right(_, Position)), \+(top(_, Position)).
+
+

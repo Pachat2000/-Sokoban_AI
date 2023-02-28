@@ -71,4 +71,18 @@ corner(Position):- \+(right(_, Position)), \+(top(Position, _)).
 corner(Position):- \+(right(Position, _)), \+(top(_, Position)).
 corner(Position):- \+(right(_, Position)), \+(top(_, Position)).
 
+loop_box(_,[]).
+loop_box(Loc,[H|T]) :-
+    \+ stuck(H, Loc),
+    loop_box(Loc,T).
+
+good_dest(Loc,BoxLocs):-
+	\+(member(Loc,BoxLocs)),
+	storage(Loc), 
+	loop_box(Loc,BoxLocs).
+good_dest(Loc,BoxLocs):- 
+    \+(member(Loc,BoxLocs)),
+    \+(corner),
+    loop_box(Loc,BoxLocs).
+    
 
